@@ -1,0 +1,79 @@
+import java.util.Random;
+
+class MatrixMultiplier implements Runnable { //Using implements runnable over extends threads, runnable extends threads already so gives it more functionality
+    private int[][] A, B, result;
+    private int startRow, endRow;
+
+    // Constructor to initialize matrices and row range
+    public MatrixMultiplier(int[][] A, int[][] B, int[][] result, int startRow, int endRow) {
+        this.A = A;
+        this.B = B;
+        this.result = result;
+        this.startRow = startRow;
+        this.endRow = endRow;
+    }
+
+    // Matrix multiplication for each thread
+    public void run() {
+        for (int i = startRow; i < endRow; i++) {
+            for (int j = 0; j < B[0].length; j++) {
+                for (int k = 0; k < A[0].length; k++) {
+                    result[i][j] += A[i][k] * B[k][j];
+                }
+            }
+        }
+    }
+}
+
+
+public class MultithreadedMatrixMultiplication {
+    public static void main(String[] args) throws InterruptedException {
+        final int SIZE = 20;
+        int[][] A = new int[SIZE][SIZE];
+        int[][] B = new int[SIZE][SIZE];
+        int[][] result = new int[SIZE][SIZE];
+        
+        Random rand = new Random();
+        
+        // Initialize matrices A and B with random values
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                A[i][j] = rand.nextInt(10);
+                B[i][j] = rand.nextInt(10);
+            }
+        }
+        
+        // Create threads
+        Thread[] threads = new Thread[5];
+        int rowsPerThread = SIZE / 5;
+        
+        for (int i = 0; i < 5; i++) {
+            int startRow = i * rowsPerThread;
+            int endRow = (i + 1) * rowsPerThread;
+            threads[i] = new Thread(new MatrixMultiplier(A, B, result, startRow, endRow));
+            threads[i].start();
+        }
+
+        // Wait for all threads to finish
+        for (Thread thread : threads) {
+            thread.join();
+        }
+        //Print the multiplied matrices
+        printMatrix(A);
+        printMatrix(B);
+        // Print the resulting matrix
+        printMatrix(result);
+    }
+
+
+    // Function to print the matrix
+    private static void printMatrix(int[][] matrix) {
+        System.out.println("Resultant Matrix:");
+        for (int[] row : matrix) {
+            for (int element : row) {
+                System.out.print(element + " ");
+            }
+            System.out.println();
+        }
+    }
+}
